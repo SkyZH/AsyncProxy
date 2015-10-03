@@ -26,3 +26,14 @@ This is the proxy server.
     ./main_client.py
 
 This is the application using the proxy server to connect to the echo server.
+
+## Application
+
+In the future, DGlobe will open a proxy server for applications to connect.
+Header may contain Kademlia User Hash and virtual target port.
+
+## Improvement
+
+Add Protocol of User Datagram Protocol (UDP)
+
+Add Crypt Services
