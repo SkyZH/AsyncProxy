@@ -11,5 +11,10 @@ coro = loop.create_server(lambda: DawnServerClientProtocol(loop),
                               '127.0.0.1', 8888)
 
 loop.run_until_complete(coro)
-loop.run_forever()
+
+try:
+    loop.run_forever()
+except KeyboardInterrupt:
+    pass
+
 loop.close()

@@ -1,5 +1,6 @@
 import asyncio
 import config
+import struct
 from remoteclient import DawnRemoteClientProtocol
 
 DAWN_SERVER_STAGE_INIT = 0
@@ -37,16 +38,18 @@ class DawnServerClientProtocol(asyncio.Protocol):
             if len(self.buffer) < config.STAGE["HEADER"]["HEADER_LENGTH"]:
                 pass
             else:
-                self.remote_addr = self.buffer[1:self.buffer[0] + 1]
+                (self.remote_port, ) = struct.unpack("H", self.buffer[1:self.buffer[0] + 1])
+                self.remote_addr = self.buffer[self.buffer[0] + 2: self.buffer[self.buffer[0] + 1] + self.buffer[0] + 2].decode()
                 self.buffer = self.buffer[config.STAGE["HEADER"]["HEADER_LENGTH"]:]
                 self.stage = DAWN_SERVER_STAGE_ESTABLISH
                 print("[NOTICE] Stage Changed to ESTABLISH")
         if self.stage == DAWN_SERVER_STAGE_ESTABLISH:
             future = asyncio.Future()
+            print("[NOTICE] Establishing Connection to %s:%d" % (self.remote_addr, self.remote_port))
             coro = (self.loop).create_connection(
                 lambda: DawnRemoteClientProtocol(self.loop, self.transport),
                 self.remote_addr,
-                8234
+                self.remote_port
             )
             future = asyncio.Future()
             asyncio.async(coro)
