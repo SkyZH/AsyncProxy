@@ -28,6 +28,16 @@ class DawnServerClientProtocol(asyncio.Protocol):
         self.remote_protocol, self.transport = future.result()
         self.stage = DAWN_SERVER_STAGE_DATA
         print("[NOTICE] Stage Changed to DATA")
+    async def doConnect(self, future):
+        try:
+            await (self.loop).create_connection(
+                lambda: DawnRemoteClientProtocol(self.loop, self.transport),
+                self.remote_addr,
+                self.remote_port
+            )
+        except ConnectionRefusedError:
+            print("[NOTICE] Failed to Establish Connection")
+            self.transport.close()
 
     def data_received(self, data):
         self.buffer += data
@@ -46,14 +56,13 @@ class DawnServerClientProtocol(asyncio.Protocol):
         if self.stage == DAWN_SERVER_STAGE_ESTABLISH:
             future = asyncio.Future()
             print("[NOTICE] Establishing Connection to %s:%d" % (self.remote_addr, self.remote_port))
-            coro = (self.loop).create_connection(
-                lambda: DawnRemoteClientProtocol(self.loop, self.transport),
-                self.remote_addr,
-                self.remote_port
-            )
-            future = asyncio.Future()
-            asyncio.async(coro)
-            future.add_done_callback(self.onEstablished)
+            try:
+
+                future = asyncio.Future()
+                asyncio.async(self.doConnect(future))
+                future.add_done_callback(self.onEstablished)
+            except ConnectionRefusedError:
+                self.transport.close()
         if self.stage == DAWN_SERVER_STAGE_DATA:
             print(self.buffer())
             self.buffer = bytes([])

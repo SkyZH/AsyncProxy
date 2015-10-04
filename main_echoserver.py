@@ -7,7 +7,7 @@ class EchoServerClientProtocol(asyncio.Protocol):
         peername = transport.get_extra_info('peername')
         print('Connection from {}'.format(peername))
         self.transport = transport
-        self.transport.write(b"Hello! You're receiving data from Echo Server.")
+        self.transport.write(b"Hello! You're receiving data from Echo Server.\n" * 1000000)
         self.transport.close()
 
     def data_received(self, data):
