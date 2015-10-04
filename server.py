@@ -24,22 +24,27 @@ class DawnServerClientProtocol(asyncio.Protocol):
         print("[NOTICE] Connection from {}".format(peername))
         self.transport = transport
 
-    def onEstablished(self, future):
-        self.remote_protocol, self.transport = future.result()
-        self.stage = DAWN_SERVER_STAGE_DATA
-        print("[NOTICE] Stage Changed to DATA")
-    async def doConnect(self, future):
+    async def doConnect(self):
         try:
-            await (self.loop).create_connection(
+            (self.remote_transport, self.remote_protocol) = await (self.loop).create_connection(
                 lambda: DawnRemoteClientProtocol(self.loop, self.transport),
                 self.remote_addr,
                 self.remote_port
             )
+            self.stage = DAWN_SERVER_STAGE_DATA
+            print("[NOTICE] Stage Changed to DATA")
+
+            self.remote_transport.write(self.buffer)
+            self.buffer = bytes([])
         except ConnectionRefusedError:
             print("[NOTICE] Failed to Establish Connection")
             self.transport.close()
 
     def data_received(self, data):
+        if self.stage == DAWN_SERVER_STAGE_DATA:
+            self.remote_transport.write(data)
+            return
+
         self.buffer += data
         if self.stage == DAWN_SERVER_STAGE_INIT:
             self.stage = DAWN_SERVER_STAGE_HEADER
@@ -56,13 +61,8 @@ class DawnServerClientProtocol(asyncio.Protocol):
         if self.stage == DAWN_SERVER_STAGE_ESTABLISH:
             future = asyncio.Future()
             print("[NOTICE] Establishing Connection to %s:%d" % (self.remote_addr, self.remote_port))
-            try:
+            asyncio.async(self.doConnect())
 
-                future = asyncio.Future()
-                asyncio.async(self.doConnect(future))
-                future.add_done_callback(self.onEstablished)
-            except ConnectionRefusedError:
-                self.transport.close()
-        if self.stage == DAWN_SERVER_STAGE_DATA:
-            print(self.buffer())
-            self.buffer = bytes([])
+    def connection_lost(self, exc):
+        self.remote_transport.close()
+        self.transport.close()

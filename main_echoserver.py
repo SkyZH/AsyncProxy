@@ -3,15 +3,17 @@
 import asyncio
 
 class EchoServerClientProtocol(asyncio.Protocol):
+    def __init__(self):
+        pass
+
     def connection_made(self, transport):
         peername = transport.get_extra_info('peername')
         print('Connection from {}'.format(peername))
         self.transport = transport
-        self.transport.write(b"Hello! You're receiving data from Echo Server.\n" * 1000000)
-        self.transport.close()
 
     def data_received(self, data):
-        pass
+        for i in range(len(data)):
+            self.transport.write(b"A" * 1024 * 1024)
 
 loop = asyncio.get_event_loop()
 # Each client connection will create a new protocol instance

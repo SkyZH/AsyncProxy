@@ -9,6 +9,8 @@ class DawnClientProtocol(asyncio.Protocol):
         self.dest_port = dest_port
         self.transport = None
 
+        self.data_size = 0
+
     def _get_addr_buffer(self):
         __addr_data = self.dest_addr.encode()
         __port_data = struct.pack("H", self.dest_port)
@@ -19,14 +21,24 @@ class DawnClientProtocol(asyncio.Protocol):
             __addr_data
         ]).ljust(config.STAGE["HEADER"]["HEADER_LENGTH"])
 
+    def send_command(self):
+        print("[NOTICE] %d Bytes Transferred." % (self.data_size))
+        self.transport.write(b"E" * 1024)
+        print("[NOTICE] Command Sent")
+        self.loop.call_later(1, self.send_command)
 
     def connection_made(self, transport):
+        self.transport = transport
         print("[NOTICE] Connection Established, Sending Header")
-        transport.write(self._get_addr_buffer())
+        self.transport.write(self._get_addr_buffer())
         print("[NOTICE] Header Sent")
+        self.loop.call_later(1, self.send_command)
 
     def data_received(self, data):
-        print(data.decode())
+        self.data_size += len(data)
+        # print(data.decode())
+        pass
 
     def connection_lost(self, exc):
+        print("[NOTICE] Connection Lost, %d Bytes Transferred." % (self.data_size))
         self.loop.stop()
