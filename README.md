@@ -32,6 +32,13 @@ This is the application using the proxy server to connect to the echo server.
     main_echoserver --- `Hello! You're receiving data from Echo Server.` ---> main_server
     main_server --- 'Hello! You're receiving data from Echo Server.' ---> main_client
 
+## Shadowsocks
+
+We've introduced socks5 server for shadowsocks-like usage.
+
+[Shadowsocks](https://github.com/shadowsocks/shadowsocks),
+A fast tunnel proxy that helps you bypass firewalls.
+
     chmod 777 main_socks5server.py
     ./main_socks5server.py
 
@@ -39,13 +46,6 @@ Then connect to localhost:1080 using socks5 protocol.
 
     Web Browser --- Socks5 Protocol ---> main_socks5server
     main_sock5server --- DawnRemoteClientProtocol ---> Remote Server
-
-## Shadowsocks
-
-We've introduced socks5 server for shadowsocks-like usage.
-
-[Shadowsocks](https://github.com/shadowsocks/shadowsocks),
-A fast tunnel proxy that helps you bypass firewalls.
 
 ## Stage
 
