@@ -2,6 +2,10 @@
 
 Simple Async Proxy written in Python
 
+## Shadowsocks
+
+We've introduced socks5 server for shadowsocks-like usage.
+
 ## Run
 
 Run Proxy after installing Python 3.5 in /usr/local/bin

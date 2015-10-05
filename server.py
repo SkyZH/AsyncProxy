@@ -13,18 +13,23 @@ class DawnServerClientProtocol(asyncio.Protocol):
     def __init__(self, loop):
         self.loop = loop
         self.transport = None
+
         self.buffer = bytes([])
+
         self.stage = DAWN_SERVER_STAGE_INIT
+
         self.remote_protocol = None
         self.remote_transport = None
+
         self.remote_addr = None
+        self.remote_port = None
 
     def connection_made(self, transport):
+        self.transport = transport
         peername = transport.get_extra_info('peername')
         print("[NOTICE] Connection from {}".format(peername))
-        self.transport = transport
 
-    async def doConnect(self):
+    async def connect_remote(self):
         try:
             (self.remote_transport, self.remote_protocol) = await (self.loop).create_connection(
                 lambda: DawnRemoteClientProtocol(self.loop, self.transport),
@@ -32,6 +37,7 @@ class DawnServerClientProtocol(asyncio.Protocol):
                 self.remote_port
             )
             self.stage = DAWN_SERVER_STAGE_DATA
+
             print("[NOTICE] Stage Changed to DATA")
 
             self.remote_transport.write(self.buffer)
@@ -46,6 +52,7 @@ class DawnServerClientProtocol(asyncio.Protocol):
             return
 
         self.buffer += data
+
         if self.stage == DAWN_SERVER_STAGE_INIT:
             self.stage = DAWN_SERVER_STAGE_HEADER
             print("[NOTICE] Stage Changed to HEADER")
@@ -56,13 +63,15 @@ class DawnServerClientProtocol(asyncio.Protocol):
                 (self.remote_port, ) = struct.unpack("H", self.buffer[1:self.buffer[0] + 1])
                 self.remote_addr = self.buffer[self.buffer[0] + 2: self.buffer[self.buffer[0] + 1] + self.buffer[0] + 2].decode()
                 self.buffer = self.buffer[config.STAGE["HEADER"]["HEADER_LENGTH"]:]
+
                 self.stage = DAWN_SERVER_STAGE_ESTABLISH
                 print("[NOTICE] Stage Changed to ESTABLISH")
         if self.stage == DAWN_SERVER_STAGE_ESTABLISH:
-            future = asyncio.Future()
             print("[NOTICE] Establishing Connection to %s:%d" % (self.remote_addr, self.remote_port))
-            asyncio.async(self.doConnect())
+            asyncio.async(self.connect_remote())
 
     def connection_lost(self, exc):
         self.remote_transport.close()
         self.transport.close()
+
+        print("[NOTICE] Local closed Connection")
