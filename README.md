@@ -2,10 +2,6 @@
 
 Simple Async Proxy written in Python
 
-## Shadowsocks
-
-We've introduced socks5 server for shadowsocks-like usage.
-
 ## Run
 
 Run Proxy after installing Python 3.5 in /usr/local/bin
@@ -35,6 +31,19 @@ This is the application using the proxy server to connect to the echo server.
     main_server --- Connect ---> main_echoserver
     main_echoserver --- `Hello! You're receiving data from Echo Server.` ---> main_server
     main_server --- 'Hello! You're receiving data from Echo Server.' ---> main_client
+
+    chmod 777 main_socks5server.py
+    ./main_socks5server.py
+
+
+
+## Shadowsocks
+
+We've introduced socks5 server for shadowsocks-like usage.
+
+[Shadowsocks](https://github.com/shadowsocks/shadowsocks), A fast tunnel proxy that helps you bypass firewalls.
+
+
 
 ## Stage
 

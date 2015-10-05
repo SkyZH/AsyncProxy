@@ -5,7 +5,7 @@ from remoteclient import DawnRemoteClientProtocol
 
 DAWN_SERVER_STAGE_INIT = 0
 DAWN_SERVER_STAGE_HEADER = 1
-DAWN_SERVER_STAGE_ESTABLISH = 2
+DAWN_SERVER_STAGE_ESTABLISHING = 2
 DAWN_SERVER_STAGE_DATA = 3
 
 
@@ -64,11 +64,12 @@ class DawnServerClientProtocol(asyncio.Protocol):
                 self.remote_addr = self.buffer[self.buffer[0] + 2: self.buffer[self.buffer[0] + 1] + self.buffer[0] + 2].decode()
                 self.buffer = self.buffer[config.STAGE["HEADER"]["HEADER_LENGTH"]:]
 
-                self.stage = DAWN_SERVER_STAGE_ESTABLISH
+                self.stage = DAWN_SERVER_STAGE_ESTABLISHING
                 print("[NOTICE] Stage Changed to ESTABLISH")
-        if self.stage == DAWN_SERVER_STAGE_ESTABLISH:
-            print("[NOTICE] Establishing Connection to %s:%d" % (self.remote_addr, self.remote_port))
-            asyncio.async(self.connect_remote())
+                print("[NOTICE] Establishing Connection to %s:%d" % (self.remote_addr, self.remote_port))
+                asyncio.async(self.connect_remote())
+        if self.stage == DAWN_SERVER_STAGE_ESTABLISHING:
+            pass
 
     def connection_lost(self, exc):
         self.remote_transport.close()
