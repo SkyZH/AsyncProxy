@@ -14,7 +14,7 @@ class DawnServerClientProtocol(asyncio.Protocol):
         self.loop = loop
         self.transport = None
 
-        self.buffer = bytes([])
+        self.buffer = b""
 
         self.stage = DAWN_SERVER_STAGE_INIT
 

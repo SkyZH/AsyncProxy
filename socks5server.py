@@ -14,7 +14,7 @@ class Socks5Protocol(asyncio.Protocol):
         self.loop = loop
         self.transport = None
 
-        self.buffer = bytes([])
+        self.buffer = b""
 
         self.stage = SOCKS5_SERVER_STAGE_INIT
 
